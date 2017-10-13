@@ -15,13 +15,16 @@ except ImportError:
     from urllib.parse import urljoin
 
 #API Keys
-bittrex_api_key = {"key": "529395c13d844375b6ffec8c2cb7e2ef", "secret": "fa6bfba58c204a97b4a77c10f598a9c9"}
-gemini = Client('ZIy7qhgtYQxd5m8a73vf','31BnrujrngPCmXztvE35F8vFZ8CB')
+#PLEASE ADD YOU KEYS HERE
+bittrex_api_key = {"key": "0000000000", "secret": "f0000000000000"}
+gemini = Client('00000000000','0000000000000')
 
-#following global variables are used for the nanopool api wrapper
-eth_address = '0x2e699bb880bd665bf2339336c921d0c6fa369b15'
+#Mining Deposit Address
+#CHANGE TO YOUR ADDRESS
+eth_mining_address = '0x2e699bb880bd665bf2339336c921d0c6fa369b15'
 
 #cold storage addresses
+#PLEASE CHANGE TO YOUR ADDRESSES
 btc_wallet = ['1DccyaqJHKbq4PQJEqbT8xDXkoy2dnuzhq', '12beH3MQjGNVXKPe6skmsizVh3Me1tYgd4', '1L5VcgP8oH7EanhpD5Uwbx9u5qrFwuhfsp', '1JwQW9eNGbkSNAb74wTBaSWjZJvpubQ1L', '1KWi83jGbu5FKDfVY2UmDiGv6ZTwUFkQHY', '1GZChf7gRyDdUnYP72bKVfvTQ4NgY2sNdS','19KMNsxzULirWAUBYE6JCSQoKhQK3difD1','1MHryQ1z1L6Gorjr4Nqw8kTFw5CZKAKG7S', '1G6uYSKNCgRkrhixmBQuCch4pXuLnL4UyM','14wDNjMRAiVaWqQyCCQDbaVYF1KWMK6Ujg', '1B4vf77HEGH8zVCFBtdk4UAfC2SCDX63yE', '13jvXFBFMjYRfp69azuvNYyAu4aZsM9APU', '1MtA3DgenJX22SgpfXf6MhyBLFRudBpLt7']
 cols_eth_stor = ['0xa4C2F38ab69cCB5Ac14e27a65D64e18ddfd73C6A']
 depo_chase = 250+249.5
@@ -283,12 +286,27 @@ class bittrex(object):
 #Take from https://github.com/ericsomdahl/python-bittrex****
 
 class nano(object):
-    def __init__(self, ethereum_address):
-        self.eth_address = ethereum_address
+    def __init__(self, eth_address):
+        self.eth_address = eth_address
     def url_creator(self, type):
-        url = 'https://api.nanopool.org/v1/eth/' + type + '/' + eth_address
+
+        """
+        creates the unique url for each API function
+        :param type: the type of API request
+        :type type: str
+        :return: completed url with mining address and API function
+        :rtype : str
+        """
+
+        url = 'https://api.nanopool.org/v1/eth/' + type + '/' + nano.eth_address
         return (url)
     def balance(self):
+
+        """
+        sends a request to Nanopool for ETH balance of the miner
+        :return: ETH balance
+        :rtype : str
+        """
 
         url = self.url_creator('balance')
         resp = requests.get(url)
@@ -308,6 +326,14 @@ class nano(object):
             print("Something went terribly wrong, please run and hide")
     def avghashrate(self):
 
+        """
+        sends request to Nanopool to get the average hash rates for a variety of time frames
+        :param type: the type of API request
+        :type type: str
+        :return: dictionary with average hash rates for different time frames
+        :rtype : dict
+        """
+
         url = self.url_creator('avghashrate')
         resp = requests.get(url)
 
@@ -325,6 +351,12 @@ class nano(object):
         else:
             print("Something went terribly wrong, please run and hide")
     def currenthashrate(self):
+
+        """
+        Queries Nanopool and returns current hashrate
+        :return: JSON data from Nanopool
+        :rtype : str
+        """
 
         url = self.url_creator('hashrate')
         resp = requests.get(url)
@@ -344,6 +376,13 @@ class nano(object):
             print("Something went terribly wrong, please run and hide")
     def info(self):
 
+        """
+        Queries Nanopool and returns info
+        :return: JSON data from Nanopool
+        :rtype : dict
+        """
+
+
         url = self.url_creator('user')
         resp = requests.get(url)
 
@@ -354,13 +393,19 @@ class nano(object):
 
         if data['status'] == True:
             return (data['data'])
-
         elif data['status'] == False:
             print('Oops, something went wrong' + "\n" + data["error"])
 
         else:
             print("Something went terribly wrong, please run and hide")
     def profitability(self):
+
+        """
+        Queries Nanopool and returns current profitability
+        :return: JSON data from Nanopool
+        :rtype : str
+        """
+
 
         hash_24hr = self.avghashrate()['h24']
         url = 'https://api.nanopool.org/v1/eth/approximated_earnings/' + str(hash_24hr)
@@ -380,8 +425,13 @@ class nano(object):
         else:
             print("Something went terribly wrong, please run and hide")
 class bitchain(object):
-
     def balance(self, btc_address):
+
+        """
+        Queries Bitchain and returns balance at a given bitcoin address
+        :return: JSON data from Bitchain
+        :rtype : str
+        """
 
         url = 'https://blockchain.info/rawaddr/' + btc_address
         resp = requests.get(url)
@@ -395,6 +445,13 @@ class bitchain(object):
 class ethchain(object):
 
     def balance(self, eth_address):
+
+        """
+        Queries Ethchain and returns balance at a given ethereum address
+        :return: JSON data from Ethchain
+        :rtype : str
+        """
+
         url = 'https://api.blockcypher.com/v1/eth/main/addrs/' + eth_address + '/balance'
         resp = requests.get(url)
 
@@ -406,13 +463,12 @@ class ethchain(object):
         return (data['final_balance'])
 
 #initializing the classes
-nano = nano(eth_address)
+nano = nano(eth_mining_address)
 bittrex = bittrex(bittrex_api_key["key"], bittrex_api_key["secret"])
 polo = Poloniex()
 krak = krakenex.API()
 bc = bitchain()
 ec = ethchain()
-
 
 def calc_ETH_yields(hashrateMH):
     netHash = 6807  # network hash rate in GH/s
